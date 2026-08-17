@@ -548,7 +548,7 @@ const App: React.FC = () => {
 
     const referrer = document.referrer;
     if (
-      referrer.includes("app-siswa-pkbm.vercel.app") ||
+      referrer.includes("app-siswa-pkbm3.vercel.app") ||
       window.location.search.includes("from=pkbm")
     ) {
       setIsFromPKBM(true);
@@ -1749,7 +1749,7 @@ const App: React.FC = () => {
     // 👇 Jika Siswa, langsung redirect duluan SEBELUM state apa pun diubah
     // agar tidak sempat render ulang ke halaman login lokal
     if (userRole === "Siswa") {
-      window.location.href = "https://app-siswa-pkbm.vercel.app/";
+      window.location.href = "https://app-siswa-pkbm3.vercel.app/";
       return;
     }
 
@@ -6055,15 +6055,23 @@ const App: React.FC = () => {
       const kelasSiswa = (form.class || "").toString().trim().toLowerCase();
       const mapelSiswa = (form.mapel || "").toString().trim().toLowerCase();
 
-      filteredMateri = materiData.filter((m) => {
-        const matchKelas = kelasSiswa
-          ? m.kelas.trim().toLowerCase() === kelasSiswa
-          : true;
-        const matchMapel = mapelSiswa
-          ? m.mapel.trim().toLowerCase() === mapelSiswa
-          : true;
-        return matchKelas && matchMapel;
-      });
+      if (mapelSiswa.includes("guru kelas sd")) {
+        // Guru Kelas SD mengajar semua mapel dalam satu paket,
+        // jadi tampilkan SEMUA materi dengan paket = "A (SD)"
+        filteredMateri = materiData.filter(
+          (m) => (m.paket || "").trim().toLowerCase() === "a (sd)"
+        );
+      } else {
+        filteredMateri = materiData.filter((m) => {
+          const matchKelas = kelasSiswa
+            ? m.kelas.trim().toLowerCase() === kelasSiswa
+            : true;
+          const matchMapel = mapelSiswa
+            ? m.mapel.trim().toLowerCase() === mapelSiswa
+            : true;
+          return matchKelas && matchMapel;
+        });
+      }
     } else {
       // Guru bisa filter manual
       filteredMateri = materiData.filter((m) => {
@@ -6088,8 +6096,17 @@ const App: React.FC = () => {
 
         {userRole === "Siswa" && (
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
-            Menampilkan materi untuk Kelas <strong>{form.class || "-"}</strong>{" "}
-            - Mapel <strong>{form.mapel || "-"}</strong>
+            {(form.mapel || "").toLowerCase().includes("guru kelas sd") ? (
+              <>
+                Menampilkan semua materi Paket <strong>A (SD)</strong>
+              </>
+            ) : (
+              <>
+                Menampilkan materi untuk Kelas{" "}
+                <strong>{form.class || "-"}</strong> - Mapel{" "}
+                <strong>{form.mapel || "-"}</strong>
+              </>
+            )}
           </div>
         )}
 
